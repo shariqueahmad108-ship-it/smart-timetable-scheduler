@@ -20,3 +20,6 @@ dev = [
 
 [project.scripts]
 timetable = "scheduler.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
