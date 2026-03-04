@@ -4,9 +4,9 @@ import TimetableGrid from './components/TimetableGrid';
 import TeacherView from './components/TeacherView';
 import StatsPanel from './components/StatsPanel';
 import { generateTimetable, exportExcel } from './api';
-import { SAMPLE_DATA } from './sampleData';
+import { SAMPLE_DATA, EXAM_SAMPLE_DATA } from './sampleData';
 
-const INITIAL = { ...SAMPLE_DATA, algorithm: 'backtracking', ga_population: 100, ga_generations: 500 };
+const INITIAL = { ...SAMPLE_DATA, algorithm: 'backtracking', mode: 'timetable', ga_population: 100, ga_generations: 500, sa_initial_temp: 1000, sa_cooling_rate: 0.995 };
 
 export default function App() {
   const [inputData, setInputData] = useState(INITIAL);
@@ -45,16 +45,26 @@ export default function App() {
     setError(null);
   }
 
-  const algoLabel = inputData.algorithm === 'genetic' ? 'Genetic Algorithm' : 'Backtracking + MRV';
+  function handleModeSwitch(mode) {
+    if (mode === 'exam') {
+      setInputData({ ...EXAM_SAMPLE_DATA, algorithm: inputData.algorithm, mode: 'exam', ga_population: inputData.ga_population, ga_generations: inputData.ga_generations, sa_initial_temp: inputData.sa_initial_temp, sa_cooling_rate: inputData.sa_cooling_rate });
+    } else {
+      setInputData({ ...SAMPLE_DATA, algorithm: inputData.algorithm, mode: 'timetable', ga_population: inputData.ga_population, ga_generations: inputData.ga_generations, sa_initial_temp: inputData.sa_initial_temp, sa_cooling_rate: inputData.sa_cooling_rate });
+    }
+  }
+
+  const algoLabels = { backtracking: 'Backtracking + MRV', genetic: 'Genetic Algorithm', simulated_annealing: 'Simulated Annealing' };
+  const algoLabel = algoLabels[inputData.algorithm] || inputData.algorithm;
+  const isExam = inputData.mode === 'exam';
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-[system-ui]">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">T</div>
+            <div className="w-8 h-8 rounded bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">{isExam ? 'E' : 'T'}</div>
             <div>
-              <h1 className="text-base font-semibold leading-tight">Timetable Scheduler</h1>
+              <h1 className="text-base font-semibold leading-tight">{isExam ? 'Exam Scheduler' : 'Timetable Scheduler'}</h1>
               <p className="text-xs text-slate-400">graph coloring &middot; constraint satisfaction</p>
             </div>
           </div>
@@ -94,7 +104,26 @@ export default function App() {
               </button>
             </div>
 
-            <InputForm data={inputData} onChange={setInputData} />
+            {/* mode toggle */}
+            <div className="mb-4 p-4 bg-white border border-slate-200 rounded-lg">
+              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-3">Scheduling mode</p>
+              <div className="flex gap-3">
+                {[
+                  { value: 'timetable', label: 'Timetable', desc: 'Regular class scheduling with lectures, labs, and teacher assignments.' },
+                  { value: 'exam', label: 'Exam', desc: 'Exam scheduling: max 1 exam/day per group, spread across days.' },
+                ].map(opt => (
+                  <label key={opt.value}
+                    className={`flex-1 p-3 rounded-md border cursor-pointer transition-all text-sm ${inputData.mode === opt.value ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                    <input type="radio" name="mode" value={opt.value} checked={inputData.mode === opt.value}
+                      onChange={() => handleModeSwitch(opt.value)} className="sr-only" />
+                    <span className="font-medium block">{opt.label}</span>
+                    <span className="text-xs text-slate-500 mt-0.5 block">{opt.desc}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <InputForm data={inputData} onChange={setInputData} isExam={isExam} />
 
             {/* algorithm picker */}
             <div className="mt-6 p-5 bg-white border border-slate-200 rounded-lg">
@@ -103,6 +132,7 @@ export default function App() {
                 {[
                   { value: 'backtracking', label: 'Backtracking + MRV', desc: 'Exact solver. Guarantees valid output. Fast for small inputs.' },
                   { value: 'genetic', label: 'Genetic Algorithm', desc: 'Heuristic optimizer. Better soft constraint handling. Slower.' },
+                  { value: 'simulated_annealing', label: 'Simulated Annealing', desc: 'Iterative optimizer. Good balance of speed and quality.' },
                 ].map(opt => (
                   <label key={opt.value}
                     className={`flex-1 p-3 rounded-md border cursor-pointer transition-all text-sm ${inputData.algorithm === opt.value ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'}`}>
@@ -126,6 +156,22 @@ export default function App() {
                     <input type="number" value={inputData.ga_generations}
                       onChange={e => setInputData({ ...inputData, ga_generations: +e.target.value || 500 })}
                       className="ml-2 w-16 border border-slate-200 rounded px-1.5 py-0.5 text-xs" />
+                  </label>
+                </div>
+              )}
+              {inputData.algorithm === 'simulated_annealing' && (
+                <div className="flex gap-4 mt-3 ml-1">
+                  <label className="text-xs text-slate-500">
+                    Initial temp
+                    <input type="number" value={inputData.sa_initial_temp}
+                      onChange={e => setInputData({ ...inputData, sa_initial_temp: +e.target.value || 1000 })}
+                      className="ml-2 w-20 border border-slate-200 rounded px-1.5 py-0.5 text-xs" />
+                  </label>
+                  <label className="text-xs text-slate-500">
+                    Cooling rate
+                    <input type="number" step="0.001" value={inputData.sa_cooling_rate}
+                      onChange={e => setInputData({ ...inputData, sa_cooling_rate: +e.target.value || 0.995 })}
+                      className="ml-2 w-20 border border-slate-200 rounded px-1.5 py-0.5 text-xs" />
                   </label>
                 </div>
               )}

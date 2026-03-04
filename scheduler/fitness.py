@@ -114,4 +114,10 @@ def evaluate(timetable: Timetable, data: TimetableInput) -> FitnessBreakdown:
                 fb.balance_bonus += 1
 
     fb.bonus = 10 * fb.consecutive_lab_bonus + 5 * fb.balance_bonus
+
+    # apply exam-specific penalties if in exam mode
+    if data.mode == "exam":
+        from .exam import apply_exam_penalties
+        fb = apply_exam_penalties(fb, timetable, data)
+
     return fb

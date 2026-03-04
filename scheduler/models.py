@@ -98,6 +98,7 @@ class TimetableInput:
     periods_per_day: int = 6
     lunch_break_after_period: int = 3
     max_classes_per_day_per_group: int = 5
+    mode: str = "timetable"  # "timetable" or "exam"
 
     def get_all_time_slots(self) -> list[TimeSlot]:
         return [

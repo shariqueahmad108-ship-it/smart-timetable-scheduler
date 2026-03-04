@@ -47,6 +47,12 @@ class ConstraintsIn(BaseModel):
 class Algorithm(str, Enum):
     BACKTRACKING = "backtracking"
     GENETIC = "genetic"
+    SIMULATED_ANNEALING = "simulated_annealing"
+
+
+class ScheduleMode(str, Enum):
+    TIMETABLE = "timetable"
+    EXAM = "exam"
 
 
 class GenerateRequest(BaseModel):
@@ -59,8 +65,11 @@ class GenerateRequest(BaseModel):
     constraints: ConstraintsIn = Field(default_factory=ConstraintsIn)
     timeout: float = 30.0
     algorithm: Algorithm = Algorithm.BACKTRACKING
+    mode: ScheduleMode = ScheduleMode.TIMETABLE
     ga_population: int = 100
     ga_generations: int = 500
+    sa_initial_temp: float = 1000.0
+    sa_cooling_rate: float = 0.995
 
 
 # --- responses ---
@@ -106,6 +115,7 @@ class SolverStatsOut(BaseModel):
     algorithm: str = "backtracking"
     generations_run: int | None = None
     best_generation: int | None = None
+    restarts_used: int | None = None
 
 
 class GenerateResponse(BaseModel):

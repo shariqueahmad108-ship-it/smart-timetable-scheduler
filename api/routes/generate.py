@@ -13,6 +13,7 @@ from api.schemas import (
     SolverStatsOut,
     ViolationOut,
 )
+from scheduler.annealing import SAConfig, solve as solve_annealing
 from scheduler.backtracking import solve as solve_backtracking
 from scheduler.constraints import validate_timetable
 from scheduler.fitness import evaluate
@@ -65,6 +66,8 @@ def _build_stats(stats, algorithm: str, total_lectures: int) -> SolverStatsOut:
         out.generations_run = stats.generations_run
     if hasattr(stats, "best_generation"):
         out.best_generation = stats.best_generation
+    if hasattr(stats, "restarts_used"):
+        out.restarts_used = stats.restarts_used
     return out
 
 
@@ -74,6 +77,7 @@ def generate_timetable(req: GenerateRequest) -> GenerateResponse:
     try:
         raw = _request_to_raw(req)
         data = parse_input(raw)
+        data.mode = req.mode.value
         graph, lectures = build_conflict_graph(data)
 
         # Choose algorithm
@@ -86,6 +90,15 @@ def generate_timetable(req: GenerateRequest) -> GenerateResponse:
                 data, graph, lectures, timeout=req.timeout, config=config
             )
             algo_name = "genetic"
+        elif req.algorithm == Algorithm.SIMULATED_ANNEALING:
+            sa_config = SAConfig(
+                initial_temp=req.sa_initial_temp,
+                cooling_rate=req.sa_cooling_rate,
+            )
+            timetable, stats = solve_annealing(
+                data, graph, lectures, timeout=req.timeout, config=sa_config
+            )
+            algo_name = "simulated_annealing"
         else:
             timetable, stats = solve_backtracking(
                 data, graph, lectures, timeout=req.timeout

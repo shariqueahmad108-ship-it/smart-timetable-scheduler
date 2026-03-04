@@ -28,7 +28,7 @@ function Field({ label, value, onChange, type = 'text', className = '', ...props
   );
 }
 
-export default function InputForm({ data, onChange }) {
+export default function InputForm({ data, onChange, isExam = false }) {
   function update(key, val) {
     onChange({ ...data, [key]: val });
   }
@@ -45,7 +45,7 @@ export default function InputForm({ data, onChange }) {
 
   return (
     <div>
-      <Section title="Teachers" count={data.teachers.length} defaultOpen={true}>
+      <Section title={isExam ? "Invigilators" : "Teachers"} count={data.teachers.length} defaultOpen={true}>
         <div className="space-y-2 mt-3">
           {data.teachers.map((t, i) => (
             <div key={i} className="flex flex-col gap-1.5 p-2.5 bg-slate-50 rounded border border-slate-100">
@@ -65,7 +65,7 @@ export default function InputForm({ data, onChange }) {
           className="text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-2 block">+ teacher</button>
       </Section>
 
-      <Section title="Rooms" count={data.rooms.length}>
+      <Section title={isExam ? "Exam halls" : "Rooms"} count={data.rooms.length}>
         <div className="space-y-2 mt-3">
           {data.rooms.map((r, i) => (
             <div key={i} className="flex items-center gap-2 p-2 bg-slate-50 rounded border border-slate-100">
@@ -85,7 +85,7 @@ export default function InputForm({ data, onChange }) {
           className="text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-2 block">+ room</button>
       </Section>
 
-      <Section title="Subjects" count={data.subjects.length}>
+      <Section title={isExam ? "Exams" : "Subjects"} count={data.subjects.length}>
         <div className="space-y-2 mt-3">
           {data.subjects.map((s, i) => (
             <div key={i} className="p-2.5 bg-slate-50 rounded border border-slate-100">
@@ -116,7 +116,7 @@ export default function InputForm({ data, onChange }) {
           className="text-xs text-indigo-600 hover:text-indigo-800 font-medium mt-2 block">+ subject</button>
       </Section>
 
-      <Section title="Student groups" count={data.student_groups.length}>
+      <Section title={isExam ? "Student groups (examinees)" : "Student groups"} count={data.student_groups.length}>
         <div className="space-y-2 mt-3">
           {data.student_groups.map((g, i) => (
             <div key={i} className="p-2.5 bg-slate-50 rounded border border-slate-100">

@@ -34,3 +34,35 @@ export const SAMPLE_DATA = {
   },
   timeout: 30,
 };
+
+export const EXAM_SAMPLE_DATA = {
+  teachers: [
+    { id: 'T1', name: 'Dr. Sharma (Invigilator)', subjects: ['S1', 'S2', 'S3'] },
+    { id: 'T2', name: 'Prof. Kumar (Invigilator)', subjects: ['S4', 'S5'] },
+  ],
+  rooms: [
+    { id: 'R1', name: 'Exam Hall A', capacity: 120, type: 'lecture_hall' },
+    { id: 'R2', name: 'Exam Hall B', capacity: 120, type: 'lecture_hall' },
+    { id: 'R3', name: 'Exam Hall C', capacity: 80, type: 'lecture_hall' },
+  ],
+  subjects: [
+    { id: 'S1', name: 'Data Structures', code: 'CS301', lectures_per_week: 1, requires_lab: false, lab_hours: 0 },
+    { id: 'S2', name: 'DBMS', code: 'CS302', lectures_per_week: 1, requires_lab: false, lab_hours: 0 },
+    { id: 'S3', name: 'Operating Systems', code: 'CS303', lectures_per_week: 1, requires_lab: false, lab_hours: 0 },
+    { id: 'S4', name: 'Computer Networks', code: 'CS304', lectures_per_week: 1, requires_lab: false, lab_hours: 0 },
+    { id: 'S5', name: 'Mathematics III', code: 'MA301', lectures_per_week: 1, requires_lab: false, lab_hours: 0 },
+  ],
+  student_groups: [
+    { id: 'G1', name: 'CSE-3A', strength: 55, subjects: ['S1', 'S2', 'S3', 'S5'] },
+    { id: 'G2', name: 'CSE-3B', strength: 50, subjects: ['S1', 'S3', 'S4', 'S5'] },
+  ],
+  working_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+  periods_per_day: 3,
+  constraints: {
+    teacher_preferences: {},
+    max_classes_per_day_per_teacher: 2,
+    max_classes_per_day_per_group: 1,
+    lunch_break_after_period: 2,
+  },
+  timeout: 30,
+};
